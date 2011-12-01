@@ -104,9 +104,8 @@ Grammar			= MainFuncDecl .
 
 MainFuncDecl    = "main" FuncBody .
 
-FuncBody        = "begin" VarDecl StatementList ReturnStatement "end" .
-VarDecl         = Type identifier ";" VarDecl
-				| .
+FuncBody        = "begin" [VarDecl] StatementList ReturnStatement "end" .
+VarDecl         = Type identifier ";" [VarDecl] .
 ReturnStatement = "return" Expr ";" .
 
 StatementList   = Statement StatementList
@@ -120,10 +119,9 @@ Statement       = "if" "(" Expr ")" "then" Statement
 ForStatement    = IdAccess "<=" Expr
                 |  .
 
-Expr            = BaseExpr ( op | "-" ) BaseExpr
+Expr            = BaseExpr [ ( op | "-" ) BaseExpr ]
                 | "!" BaseExpr
-                | "-" BaseExpr
-                | BaseExpr .
+                | "-" BaseExpr .
 
 BaseExpr        = "(" Expr ")"
                 | IdAccess
