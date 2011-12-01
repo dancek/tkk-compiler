@@ -58,10 +58,10 @@ public Parser(Scanner s, Printer p) {
 CHARACTERS
 // Add character set declarations here.
 // Examples:
-//   letter = 'A'..'Z' + 'a'..'z'.
-//   digit = "0123456789".
 //   cr = '\r'.
 //   lf = '\n'.
+letter = 'A'..'Z' + 'a'..'z'.
+digit = "0123456789".
 
 
 TOKENS
@@ -69,7 +69,9 @@ TOKENS
 // Example:
 //   ident = letter {letter | digit}.
 //   number = digit {digit}.
-
+op			= "+" | "*" | "/" | "<" | "&&" .
+identifier	= letter { letter | digit } .
+integer		= digit {digit} .
 
 PRAGMAS
 // Add pragma declarations here.
@@ -118,7 +120,7 @@ Statement       = "if" "(" Expr ")" "then" Statement
 ForStatement    = IdAccess "<=" Expr
                 |  .
 
-Expr            = BaseExpr op BaseExpr
+Expr            = BaseExpr ( op | "-" ) BaseExpr
                 | "!" BaseExpr
                 | "-" BaseExpr
                 | BaseExpr .
@@ -126,14 +128,14 @@ Expr            = BaseExpr op BaseExpr
 BaseExpr        = "(" Expr ")"
                 | IdAccess
                 | integer
-                | true
-                | false
-                | read "(" ")" .
+                | "true"
+                | "false"
+                | "read" "(" ")" .
 
 IdAccess        = identifier .
 
-Type            = int
-                | boolean .
+Type            = "int"
+                | "boolean" .
 
 // End of your compiler specification, make sure the name here matches
 // the grammar name at the start of this grammar.
