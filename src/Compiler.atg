@@ -104,17 +104,14 @@ Grammar			= MainFuncDecl .
 
 MainFuncDecl    = "main" FuncBody .
 
-FuncBody        = "begin" [VarDecl] StatementList ReturnStatement "end" .
+FuncBody        = "begin" [VarDecl] {Statement} ReturnStatement "end" .
 VarDecl         = Type identifier ";" [VarDecl] .
 ReturnStatement = "return" Expr ";" .
-
-StatementList   = Statement StatementList
-				| .
 
 Statement       = "if" "(" Expr ")" "then" Statement 
 				| "for" "(" [ForStatement] ";" Expr ";" [ForStatement] ")" Statement
                 | "print" "(" Expr ")" ";"
-                | "begin" StatementList "end"
+                | "begin" {Statement} "end"
                 | IdAccess "<=" Expr ";" .
 ForStatement    = IdAccess "<=" Expr .
 
