@@ -112,12 +112,11 @@ StatementList   = Statement StatementList
 				| .
 
 Statement       = "if" "(" Expr ")" "then" Statement 
-				| "for" "(" ForStatement ";" Expr ";" ForStatement ")" Statement
+				| "for" "(" [ForStatement] ";" Expr ";" [ForStatement] ")" Statement
                 | "print" "(" Expr ")" ";"
                 | "begin" StatementList "end"
                 | IdAccess "<=" Expr ";" .
-ForStatement    = IdAccess "<=" Expr
-                |  .
+ForStatement    = IdAccess "<=" Expr .
 
 Expr            = BaseExpr [ ( op | "-" ) BaseExpr ]
                 | "!" BaseExpr
