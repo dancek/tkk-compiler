@@ -38,7 +38,15 @@ Type            -> boolean
 */
 
 // Set the name of your grammar here (and at the end of this grammar):
-COMPILER Empty
+COMPILER Grammar
+
+private Printer printer;
+
+public Parser(Scanner s, Printer p) {
+       this(s);
+       this.printer = p;
+}
+
 
 // Add auxiliary methods and declaration here.
 
@@ -90,10 +98,44 @@ PRODUCTIONS
 //   Empty = "BEGIN" { Statement } "END".
 //   Statement = ident "=" number { "+" number } .
 
-Empty=
-.
+Grammar			= MainFuncDecl .
+
+MainFuncDecl    = "main" FuncBody .
+
+FuncBody        = "begin" VarDecl StatementList ReturnStatement "end" .
+VarDecl         = Type identifier ";" VarDecl
+				| .
+ReturnStatement = "return" Expr ";" .
+
+StatementList   = Statement StatementList
+				| .
+
+Statement       = "if" "(" Expr ")" "then" Statement 
+				| "for" "(" ForStatement ";" Expr ";" ForStatement ")" Statement
+                | "print" "(" Expr ")" ";"
+                | "begin" StatementList "end"
+                | IdAccess "<=" Expr ";" .
+ForStatement    = IdAccess "<=" Expr
+                |  .
+
+Expr            = BaseExpr op BaseExpr
+                | "!" BaseExpr
+                | "-" BaseExpr
+                | BaseExpr .
+
+BaseExpr        = "(" Expr ")"
+                | IdAccess
+                | integer
+                | true
+                | false
+                | read "(" ")" .
+
+IdAccess        = identifier .
+
+Type            = int
+                | boolean .
 
 // End of your compiler specification, make sure the name here matches
 // the grammar name at the start of this grammar.
-END Empty.
+END Grammar.
 
