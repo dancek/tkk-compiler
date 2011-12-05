@@ -1,4 +1,6 @@
 /*
+A Coco/R compiler definition for the following grammar:
+
 Grammar -> MainFuncDecl
 
 MainFuncDecl    -> main FuncBody
@@ -37,14 +39,25 @@ Type            -> int
 Type            -> boolean
 */
 
+import fi.tkk.cs.tkkcc.slx.SlxProgram;
+import fi.tkk.cs.tkkcc.slx.CommandWord;
+
 // Set the name of your grammar here (and at the end of this grammar):
 COMPILER Grammar
 
 private Printer printer;
+private SlxProgram slx;
+private SymbolTable symtab;
 
 public Parser(Scanner s, Printer p) {
        this(s);
        this.printer = p;
+       this.slx = new SlxProgram();
+       this.symtab = new SymbolTable();
+}
+
+public SlxProgram getSlx() {
+	return this.slx;
 }
 
 
@@ -100,36 +113,116 @@ PRODUCTIONS
 //   Empty = "BEGIN" { Statement } "END".
 //   Statement = ident "=" number { "+" number } .
 
-Grammar			= MainFuncDecl .
+Grammar	        = MainFuncDecl .
 
-MainFuncDecl    = "main" FuncBody .
+MainFuncDecl    =   (. printer.startProduction("MainFuncDecl"); .)
+    "main"
+    FuncBody
+                    (. printer.endProduction(); .)                          .
 
-FuncBody        = "begin" [VarDecl] {Statement} ReturnStatement "end" .
-VarDecl         = Type identifier ";" [VarDecl] .
-ReturnStatement = "return" Expr ";" .
+FuncBody        =   (. printer.startProduction("FuncBody"); .)
+    "begin"         (. printer.print("("); .)
+    [VarDecl]
+    {Statement}
+    ReturnStatement
+    "end"           (.  printer.print(")");
+                        slx.emit(CommandWord.HLT); .)
+                    (. printer.endProduction(); .)                          .
 
-Statement       = "if" "(" Expr ")" "then" Statement 
-				| "for" "(" [ForStatement] ";" Expr ";" [ForStatement] ")" Statement
-                | "print" "(" Expr ")" ";"
-                | "begin" {Statement} "end"
-                | IdAccess "<=" Expr ";" .
-ForStatement    = IdAccess "<=" Expr .
+VarDecl         =   (. printer.startProduction("VarDecl"); .)
+    Type
+    identifier
+    ";"
+    [VarDecl]
+                    (. printer.endProduction(); .)                          .
 
-Expr            = BaseExpr [ ( op | "-" ) BaseExpr ]
-                | "!" BaseExpr
-                | "-" BaseExpr .
+ReturnStatement =   (. printer.startProduction("ReturnStatement"); .)
+    "return"
+    Expr
+    ";"
+                    (. printer.endProduction(); .)                          .
 
-BaseExpr        = "(" Expr ")"
-                | IdAccess
-                | integer
-                | "true"
-                | "false"
-                | "read" "(" ")" .
+Statement       =   (. printer.startProduction("Statement"); .)
+    "if"
+    "("
+    Expr
+    ")"
+    "then"
+    Statement 
+ |
+    "for"
+    "("
+    [ForStatement]
+    ";"
+    Expr
+    ";"
+    [ForStatement]
+    ")"
+    Statement
+ | 
+    "print"
+    "("
+    Expr
+    ")"
+    ";"
+ | 
+    "begin"
+    {Statement}
+    "end"
+ | 
+    IdAccess
+    "<="
+    Expr
+    ";"
+                    (. printer.endProduction(); .)                          .
 
-IdAccess        = identifier .
+ForStatement    =   (. printer.startProduction("ForStatement"); .)
+    IdAccess
+    "<="
+    Expr
+                    (. printer.endProduction(); .)                          .
 
-Type            = "int"
-                | "boolean" .
+Expr            =   (. printer.startProduction("Expr"); .)
+    BaseExpr
+    [
+      (op | "-" )
+      BaseExpr
+    ]
+ |
+    "!"
+    BaseExpr
+ | 
+    "-"
+    BaseExpr 
+.
+
+BaseExpr        =   (. printer.startProduction("BaseExpr"); .)
+    "("
+    Expr
+    ")"
+ | 
+    IdAccess
+ | 
+    integer
+ |
+    "true"
+ |
+    "false"
+ |
+    "read"
+    "("
+    ")"
+                    (. printer.endProduction(); .)                          .
+
+IdAccess        =
+    identifier
+                    (. printer.endProduction(); .)                          .
+
+Type            =
+    "int"           (. printer.print("int"); .)
+ |
+    "boolean"
+                    (. printer.endProduction(); .)                          .
 
 // End of your compiler specification, make sure the name here matches
 // the grammar name at the start of this grammar.
