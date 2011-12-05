@@ -3,13 +3,14 @@ import fi.tkk.cs.tkkcc.slx.SlxProgram;
 
 public class Compiler implements SlxCompiler {
 
+	private boolean errors;
+	
 	/* (non-Javadoc)
 	 * @see fi.tkk.cs.tkkcc.SlxCompiler#isErrors()
 	 */
 	@Override
 	public boolean isErrors() {
-		// TODO Auto-generated method stub
-		return false;
+		return errors;
 	}
 
 	/* (non-Javadoc)
@@ -17,8 +18,31 @@ public class Compiler implements SlxCompiler {
 	 */
 	@Override
 	public SlxProgram compile(String sourceFilename) {
-		// TODO Auto-generated method stub
-		return null;
+		return this.compile(sourceFilename, false);
+	}
+	
+	/**
+	 * Compile a program. Support printing all kinds of relevant info.
+	 * 
+	 * @param sourceFilename source code filename
+	 * @param verbose print information about compilation
+	 * @return compiled SlxProgram object
+	 */
+	public SlxProgram compile(String sourceFilename, boolean verbose) {
+		Scanner scanner = new Scanner(sourceFilename);
+        Printer printer = new Printer(!verbose);
+        
+        printer.print("## Compiling...");
+		Parser parser = new Parser(scanner, printer);
+		parser.Parse();
+
+		printer.print("#### Error count: " + parser.errors.count);
+		this.errors = parser.errors.count > 0;
+		
+		SlxProgram program = parser.getSlx();
+		printer.print("## SLX output:");
+		printer.print(program.toString());
+		return program;
 	}
 
 	/**
@@ -27,10 +51,8 @@ public class Compiler implements SlxCompiler {
 	 * @param args command-line parameters (first should be input)
 	 */
 	public static void main(String[] args) {
-		Scanner scanner = new Scanner(args[0]);
-        Printer printer = new Printer(false);
-		Parser parser = new Parser(scanner, printer);
-		parser.Parse();
+		Compiler c = new Compiler();
+		c.compile(args[0], true);
 	}
 
 }
