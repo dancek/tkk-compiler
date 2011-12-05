@@ -31,9 +31,9 @@ public class Printer {
      * Decrease the indentation depth.
      */
     private void decDepth() {
-        println(")");
         depth--;
         indent();
+        println(")");
     }
 
     /**
@@ -61,8 +61,8 @@ public class Printer {
      * @param s the string to be printed.
      */
     public void print(String s) {
-        println(s);
         indent();
+        println(s);
     }
 
     /**
@@ -72,9 +72,9 @@ public class Printer {
      * @param name the name of the nonterminal.
      */
     public void startProduction(String name) {
+        indent();
         incDepth();
         println(name);
-        indent();
     }
 
     /**
