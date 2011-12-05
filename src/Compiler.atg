@@ -211,7 +211,22 @@ Expr                (. printer.startProduction("Expr"); .)
     | "*" BaseExpr  (. slx.emit(MUL); .)  
     | "/" BaseExpr  (. slx.emit(DIV); .)  
     | "<" BaseExpr  (. slx.emit(RLT); .)  
-    | "&&" BaseExpr // TODO 
+    | "&&" BaseExpr (. // AND: Pop x. Pop y. Push x && y to stack.
+                        int false1 = nextAddr++,
+                            false2 = nextAddr++,
+                            fin = nextAddr++;
+                        slx.emit(JZE, false1);
+                        slx.emit(JZE, false2);
+                        // both TRUE so push(TRUE) and jump to `fin`
+                        slx.emit(ENT, TRUE);
+                        slx.emit(JMP, fin);
+                        slx.emit(LAB, false1);  // first pop() false
+                        // use JZE to pop another time
+                        slx.emit(JZE, false2);
+                        slx.emit(LAB, false2);  // false (two values popped)
+                        slx.emit(ENT, FALSE);   // push(FALSE)
+                        slx.emit(LAB, fin);     // finished!
+                    .)
     ]
   |
     "!"
