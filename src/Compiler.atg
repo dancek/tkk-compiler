@@ -86,8 +86,6 @@ op			= "+" | "*" | "/" | "<" | "&&" .
 identifier	= letter { letter | digit } .
 integer		= digit {digit} .
 
-int         = "int".
-boolean     = "boolean".
 
 PRAGMAS
 // Add pragma declarations here.
@@ -106,6 +104,7 @@ PRAGMAS
 // ignored by default.
 // Example, add line breaks to the ignore set.
 //   IGNORE cr + lf
+IGNORE ' ' + '\t' + '\r' + '\n'
 
 
 PRODUCTIONS
@@ -118,40 +117,45 @@ PRODUCTIONS
 
 Grammar	        = MainFuncDecl .
 
-MainFuncDecl    =   (. printer.startProduction("MainFuncDecl"); .)
+MainFuncDecl        (. printer.startProduction("MainFuncDecl"); .)
+  =
     "main"
     FuncBody
                     (. printer.endProduction(); .)                          .
 
-FuncBody        =   (. printer.startProduction("FuncBody"); .)
+FuncBody            (. printer.startProduction("FuncBody"); .)
+  =
     "begin"         
-    VarDecl
+    [VarDecl]
     {Statement}
     ReturnStatement
     "end"           (. slx.emit(HLT); .)
                     (. printer.endProduction(); .)                          .
 
-VarDecl         =   (. printer.startProduction("VarDecl"); .)
+VarDecl             (. printer.startProduction("VarDecl"); .)
+  =
     Type
     identifier
     ";"
     [VarDecl]
                     (. printer.endProduction(); .)                          .
 
-ReturnStatement =   (. printer.startProduction("ReturnStatement"); .)
+ReturnStatement     (. printer.startProduction("ReturnStatement"); .)
+  =
     "return"
     Expr
     ";"
                     (. printer.endProduction(); .)                          .
 
-Statement       =   (. printer.startProduction("Statement"); .)
+Statement           (. printer.startProduction("Statement"); .)
+  = (
     "if"
     "("
     Expr
     ")"
     "then"
     Statement 
- |
+  |
     "for"
     "("
     [ForStatement]
@@ -161,70 +165,75 @@ Statement       =   (. printer.startProduction("Statement"); .)
     [ForStatement]
     ")"
     Statement
- | 
+  | 
     "print"
     "("
     Expr
     ")"
-    ";"
- | 
+    ";"             (. slx.emit(WRI); .)
+  | 
     "begin"
     {Statement}
     "end"
- | 
+  | 
     IdAccess
     "<="
     Expr
     ";"
-                    (. printer.endProduction(); .)                          .
+)                   (. printer.endProduction(); .)                          .
 
-ForStatement    =   (. printer.startProduction("ForStatement"); .)
+ForStatement        (. printer.startProduction("ForStatement"); .)
+  =
     IdAccess
     "<="
     Expr
                     (. printer.endProduction(); .)                          .
 
-Expr            =   (. printer.startProduction("Expr"); .)
+Expr                (. printer.startProduction("Expr"); .)
+  = (
     BaseExpr
     [
       (op | "-" )
       BaseExpr
     ]
- |
+  |
     "!"
     BaseExpr
- | 
+  | 
     "-"
     BaseExpr 
-.
+)                   (. printer.endProduction(); .)                          .
 
-BaseExpr        =   (. printer.startProduction("BaseExpr"); .)
+BaseExpr            (. printer.startProduction("BaseExpr"); .)
+  = (
     "("
     Expr
     ")"
- | 
+  | 
     IdAccess
- | 
-    integer
- |
+  | 
+    integer         (. slx.emit(ENT, Integer.parseInt(t.val)); .)
+  |
     "true"
- |
+  |
     "false"
- |
+  |
     "read"
     "("
     ")"
-                    (. printer.endProduction(); .)                          .
+)                   (. printer.endProduction(); .)                          .
 
-IdAccess        =   (. printer.startProduction("IdAccess"); .)
+IdAccess            (. printer.startProduction("IdAccess"); .)
+  =
     identifier
                     (. printer.endProduction(); .)                          .
 
-Type            =   (. printer.startProduction("Type"); .)
-    int             (. printer.print("int"); .)
- |
-    boolean
-                    (. printer.endProduction(); .)                          .
+Type                (. printer.startProduction("Type"); .)
+  = (
+    "int"           (. printer.print("int"); .)
+  |
+    "boolean"
+)                   (. printer.endProduction(); .)                          .
 
 // End of your compiler specification, make sure the name here matches
 // the grammar name at the start of this grammar.
