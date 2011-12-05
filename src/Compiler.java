@@ -6,6 +6,13 @@ public class Compiler implements SlxCompiler {
 
 	private boolean errors;
 	
+	/**
+	 * Constructor
+	 */
+	public Compiler() {
+		super();
+	}
+	
 	/* (non-Javadoc)
 	 * @see fi.tkk.cs.tkkcc.SlxCompiler#isErrors()
 	 */
