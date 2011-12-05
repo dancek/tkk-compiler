@@ -17,6 +17,31 @@ are used where useful.
 Features
 --------
 
+### for loop
+
+The for loop works like usual, i.e. the loop is like
+
+    for(a;b;c)
+      d;
+
+and execution flows like
+
+        a;
+    test:
+        if (b) goto loop;
+        else goto end;
+    incr:
+        c;
+        goto test;
+    loop:
+        d;
+        goto incr;
+    end:
+
+Note that to get d; to run before c; we need to be jumping around all the time!
+It would have been easier to just let c; run in the beginning of the loop, but
+that's not what programmers are used to.
+
 
 Caveats
 -------
