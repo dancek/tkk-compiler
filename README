@@ -1,0 +1,30 @@
+T-106.4200 Introduction to Compiling (5 cr)
+Hannu Hartikainen
+
+
+Compiler Assignment
+===================
+
+This is a compiler made using Coco/R that compiles SLX assembler code.
+
+Documentation
+-------------
+
+The code is commented and should be quite readable. Javadoc-style comments
+are used where useful.
+
+
+Features
+--------
+
+
+Caveats
+-------
+ - `return`
+ - type checking
+
+Workload
+--------
+
+About 30 hours total were used for the project. This was due to real-life
+constraints; it would have been preferable to allocate a little more time.
