@@ -121,12 +121,11 @@ MainFuncDecl    =   (. printer.startProduction("MainFuncDecl"); .)
                     (. printer.endProduction(); .)                          .
 
 FuncBody        =   (. printer.startProduction("FuncBody"); .)
-    "begin"         (. printer.print("("); .)
+    "begin"         
     [VarDecl]
     {Statement}
     ReturnStatement
-    "end"           (.  printer.print(")");
-                        slx.emit(CommandWord.HLT); .)
+    "end"           (. slx.emit(CommandWord.HLT); .)
                     (. printer.endProduction(); .)                          .
 
 VarDecl         =   (. printer.startProduction("VarDecl"); .)
