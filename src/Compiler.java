@@ -1,4 +1,5 @@
 import fi.tkk.cs.tkkcc.SlxCompiler;
+import fi.tkk.cs.tkkcc.slx.Interpreter;
 import fi.tkk.cs.tkkcc.slx.SlxProgram;
 
 public class Compiler implements SlxCompiler {
@@ -40,8 +41,18 @@ public class Compiler implements SlxCompiler {
 		this.errors = parser.errors.count > 0;
 		
 		SlxProgram program = parser.getSlx();
-		printer.print("## SLX output:");
-		printer.print(program.toString());
+		
+		if (verbose) {
+			printer.print("\n## SLX program code:");
+			printer.print(program.toString());
+			
+			printer.print("\n## Executing...");
+			Interpreter i = new Interpreter(program, "debug");
+			int[] input = {};
+			i.execute(true, input);
+			
+			printer.print("#### Execution complete: " + i.isProgramExecuted());
+		}
 		return program;
 	}
 
