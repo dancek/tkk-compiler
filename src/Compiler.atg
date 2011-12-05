@@ -206,7 +206,7 @@ Expr                (. printer.startProduction("Expr"); .)
     | "-" BaseExpr  (. slx.emit(SUB); .)  
     | "*" BaseExpr  (. slx.emit(MUL); .)  
     | "/" BaseExpr  (. slx.emit(DIV); .)  
-    | "<" BaseExpr  (. slx.emit(RGT); .)  
+    | "<" BaseExpr  (. slx.emit(RLT); .)  
     | "&&" BaseExpr // TODO 
     ]
   |
