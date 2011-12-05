@@ -45,6 +45,10 @@ import static fi.tkk.cs.tkkcc.slx.CommandWord.*;
 // Set the name of your grammar here (and at the end of this grammar):
 COMPILER Grammar
 
+// boolean constants
+private final int TRUE = 1;
+private final int FALSE = 0;
+
 private Printer printer;
 private SlxProgram slx;
 private SymbolTable tab;
@@ -221,9 +225,9 @@ BaseExpr            (. printer.startProduction("BaseExpr"); .)
   | 
     integer         (. slx.emit(ENT, Integer.parseInt(t.val)); .)
   |
-    "true"
+    "true"          (. slx.emit(ENT, TRUE); .)
   |
-    "false"
+    "false"         (. slx.emit(ENT, FALSE); .)
   |
     "read"
     "("
