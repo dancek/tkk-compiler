@@ -88,7 +88,6 @@ TOKENS
 // Example:
 //   ident = letter {letter | digit}.
 //   number = digit {digit}.
-op			= "+" | "*" | "/" | "<" | "&&" .
 identifier	= letter { letter | digit } .
 integer		= digit {digit} .
 
@@ -203,15 +202,19 @@ Expr                (. printer.startProduction("Expr"); .)
   = (
     BaseExpr
     [
-      (op | "-" )
-      BaseExpr
+      "+" BaseExpr  (. slx.emit(ADD); .)  
+    | "-" BaseExpr  (. slx.emit(SUB); .)  
+    | "*" BaseExpr  (. slx.emit(MUL); .)  
+    | "/" BaseExpr  (. slx.emit(DIV); .)  
+    | "<" BaseExpr  (. slx.emit(RGT); .)  
+    | "&&" BaseExpr // TODO 
     ]
   |
     "!"
-    BaseExpr
+    BaseExpr        (. slx.emit(NOT); .)
   | 
     "-"
-    BaseExpr 
+    BaseExpr        (. slx.emit(UMN); .)
 )                   (. printer.endProduction(); .)                          .
 
 BaseExpr            (. printer.startProduction("BaseExpr"); .)
