@@ -240,7 +240,7 @@ IdAccess            (. printer.startProduction("IdAccess"); .)
 
 Type                (. printer.startProduction("Type"); .)
   = (
-    "int"           (. printer.print("int"); .)
+    "int"
   |
     "boolean"
 )                   (. printer.endProduction(); .)                          .
