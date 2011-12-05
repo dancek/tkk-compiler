@@ -22,6 +22,16 @@ Caveats
 -------
  - `return`
  - type checking
+ - &&
+
+
+Design decisions
+----------------
+ - ForStatement was renamed to Assignment for clarity
+ - The `op` token was replaced with the terminals it represents. This way the
+   ATG file is easier to read; for each operator, the related code is shown on
+   the same line.
+
 
 Workload
 --------
