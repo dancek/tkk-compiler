@@ -234,7 +234,7 @@ BaseExpr            (. printer.startProduction("BaseExpr"); .)
   |
     "read"
     "("
-    ")"
+    ")"             (. slx.emit(REA); .) // read from stdin
 )                   (. printer.endProduction(); .)                          .
 
 IdAccess            (. printer.startProduction("IdAccess"); .)
