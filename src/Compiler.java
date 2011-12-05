@@ -46,6 +46,9 @@ public class Compiler implements SlxCompiler {
 			printer.print("\n## SLX program code:");
 			printer.print(program.toString());
 			
+			printer.print("\n#### Symbol table:");
+			printer.print(parser.getSymbolTable().toString());
+			
 			printer.print("\n## Executing...");
 			Interpreter i = new Interpreter(program, "debug");
 			int[] input = {};

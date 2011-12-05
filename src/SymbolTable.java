@@ -14,14 +14,29 @@ public class SymbolTable {
 		this.symbols = new HashMap<String,Integer>();
 	}
 	
+	/**
+	 * Add a symbol to the table.
+	 * 
+	 * @param name symbol name
+	 * @param address address
+	 */
 	public void add(String name, int address) {
 		this.symbols.put(name, address);
 	}
 	
+	/**
+	 * Get address of a symbol.
+	 * 
+	 * @param name symbol name
+	 * @return symbol address
+	 */
 	public int getAddress(String name) {
 		return this.symbols.get(name);
 	}
 	
+	/**
+	 * Return a string representation of the symbol table.
+	 */
 	public String toString() {
 		return symbols.toString();
 	}

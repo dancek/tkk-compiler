@@ -56,14 +56,18 @@ private SymbolTable tab;
 private int nextAddr = 1; // a "sequence" of addresses
 
 public Parser(Scanner s, Printer p) {
-       this(s);
-       this.printer = p;
-       this.slx = new SlxProgram();
-       this.tab = new SymbolTable();
+    this(s);
+    this.printer = p;
+    this.slx = new SlxProgram();
+    this.tab = new SymbolTable();
 }
 
 public SlxProgram getSlx() {
-	return this.slx;
+    return this.slx;
+}
+
+public SymbolTable getSymbolTable() {
+    return this.tab;
 }
 
 
