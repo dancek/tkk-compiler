@@ -283,8 +283,12 @@ BaseExpr            (. printer.startProduction("BaseExpr"); .)
 IdAccess            (. printer.startProduction("IdAccess"); .)
   =
     identifier      (. // load variable address
-                        int addr = tab.getAddress(t.val);
-                        slx.emit(ENT, addr);
+                        if (tab.contains(t.val)) {
+                            int addr = tab.getAddress(t.val);
+                            slx.emit(ENT, addr);
+                        } else {
+                            SemErr("undeclared variable: " + t.val);
+                        }
                     .)
                     (. printer.endProduction(); .)                          .
 
