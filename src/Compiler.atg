@@ -163,8 +163,7 @@ Statement           (. printer.startProduction("Statement"); .)
   = (
     "if"
     "("
-    Expr
-                    (. // `Expr` value got pushed; if it's false, jump
+    Expr            (. // `Expr` value got pushed; if it's false, jump out of if
                         int bypass = nextAddr++;
                         slx.emit(JZE, bypass);
                     .)
@@ -174,13 +173,30 @@ Statement           (. printer.startProduction("Statement"); .)
   |
     "for"
     "("
-    [Assignment]
+    [Assignment]    // initial assignment happens first
+    ";"             (. // we need four labels (see README)
+                        int test = nextAddr++,
+                            end = nextAddr++,
+                            incr = nextAddr++,
+                            loop = nextAddr++;
+                        slx.emit(LAB, test); // label before loop test
+                    .)
+    Expr            (. // `Expr` value got pushed
+                        slx.emit(JZE, end);     // false; jump out of for
+                        slx.emit(JMP, loop);    // true; jump to loop body
+                        
+                        slx.emit(LAB, incr);    // the "incrementing" part
+                    .)
     ";"
-    Expr
-    ";"
     [Assignment]
-    ")"
-    Statement
+    ")"             (.
+                        slx.emit(JMP, test); 
+                        slx.emit(LAB, loop); // loop body
+                    .)
+    Statement       (. // end of loop; jump to "incrementing" part
+                        slx.emit(JMP, incr);
+                        slx.emit(LAB, end); // label for jumping out
+                    .)
   | 
     "print"
     "("
