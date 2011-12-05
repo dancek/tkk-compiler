@@ -40,20 +40,20 @@ Type            -> boolean
 */
 
 import fi.tkk.cs.tkkcc.slx.SlxProgram;
-import fi.tkk.cs.tkkcc.slx.CommandWord;
+import static fi.tkk.cs.tkkcc.slx.CommandWord.*;
 
 // Set the name of your grammar here (and at the end of this grammar):
 COMPILER Grammar
 
 private Printer printer;
 private SlxProgram slx;
-private SymbolTable symtab;
+private SymbolTable tab;
 
 public Parser(Scanner s, Printer p) {
        this(s);
        this.printer = p;
        this.slx = new SlxProgram();
-       this.symtab = new SymbolTable();
+       this.tab = new SymbolTable();
 }
 
 public SlxProgram getSlx() {
@@ -85,6 +85,9 @@ TOKENS
 op			= "+" | "*" | "/" | "<" | "&&" .
 identifier	= letter { letter | digit } .
 integer		= digit {digit} .
+
+int         = "int".
+boolean     = "boolean".
 
 PRAGMAS
 // Add pragma declarations here.
@@ -122,10 +125,10 @@ MainFuncDecl    =   (. printer.startProduction("MainFuncDecl"); .)
 
 FuncBody        =   (. printer.startProduction("FuncBody"); .)
     "begin"         
-    [VarDecl]
+    VarDecl
     {Statement}
     ReturnStatement
-    "end"           (. slx.emit(CommandWord.HLT); .)
+    "end"           (. slx.emit(HLT); .)
                     (. printer.endProduction(); .)                          .
 
 VarDecl         =   (. printer.startProduction("VarDecl"); .)
@@ -218,9 +221,9 @@ IdAccess        =   (. printer.startProduction("IdAccess"); .)
                     (. printer.endProduction(); .)                          .
 
 Type            =   (. printer.startProduction("Type"); .)
-    "int"           (. printer.print("int"); .)
+    int             (. printer.print("int"); .)
  |
-    "boolean"
+    boolean
                     (. printer.endProduction(); .)                          .
 
 // End of your compiler specification, make sure the name here matches
