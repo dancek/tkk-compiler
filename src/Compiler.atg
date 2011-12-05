@@ -164,9 +164,13 @@ Statement           (. printer.startProduction("Statement"); .)
     "if"
     "("
     Expr
+                    (. // `Expr` value got pushed; if it's false, jump
+                        int bypass = nextAddr++;
+                        slx.emit(JZE, bypass);
+                    .)
     ")"
     "then"
-    Statement 
+    Statement       (. slx.emit(LAB, bypass); .)
   |
     "for"
     "("
