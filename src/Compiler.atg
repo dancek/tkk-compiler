@@ -213,11 +213,11 @@ BaseExpr        =   (. printer.startProduction("BaseExpr"); .)
     ")"
                     (. printer.endProduction(); .)                          .
 
-IdAccess        =
+IdAccess        =   (. printer.startProduction("IdAccess"); .)
     identifier
                     (. printer.endProduction(); .)                          .
 
-Type            =
+Type            =   (. printer.startProduction("Type"); .)
     "int"           (. printer.print("int"); .)
  |
     "boolean"
