@@ -49,6 +49,8 @@ private Printer printer;
 private SlxProgram slx;
 private SymbolTable tab;
 
+private int nextAddr = 1; // a "sequence" of addresses
+
 public Parser(Scanner s, Printer p) {
        this(s);
        this.printer = p;
@@ -120,22 +122,25 @@ Grammar	        = MainFuncDecl .
 MainFuncDecl        (. printer.startProduction("MainFuncDecl"); .)
   =
     "main"
-    FuncBody
+    FuncBody        (. slx.emit(HLT); .)
                     (. printer.endProduction(); .)                          .
 
 FuncBody            (. printer.startProduction("FuncBody"); .)
   =
-    "begin"         
+    "begin"
     [VarDecl]
     {Statement}
     ReturnStatement
-    "end"           (. slx.emit(HLT); .)
+    "end"
                     (. printer.endProduction(); .)                          .
 
 VarDecl             (. printer.startProduction("VarDecl"); .)
   =
     Type
-    identifier
+    identifier      (. // add symbol to symbol table
+                        int addr = nextAddr++;
+                        tab.add(t.val, addr);
+                    .)
     ";"
     [VarDecl]
                     (. printer.endProduction(); .)                          .
@@ -158,11 +163,11 @@ Statement           (. printer.startProduction("Statement"); .)
   |
     "for"
     "("
-    [ForStatement]
+    [Assignment]
     ";"
     Expr
     ";"
-    [ForStatement]
+    [Assignment]
     ")"
     Statement
   | 
@@ -176,17 +181,18 @@ Statement           (. printer.startProduction("Statement"); .)
     {Statement}
     "end"
   | 
-    IdAccess
-    "<="
-    Expr
+    Assignment
     ";"
 )                   (. printer.endProduction(); .)                          .
 
-ForStatement        (. printer.startProduction("ForStatement"); .)
+
+// Assignment used to be called ForStatement
+Assignment          (. printer.startProduction("Assignment"); .)
   =
-    IdAccess
+    IdAccess        // push(addr)
     "<="
-    Expr
+    Expr            // push(val)
+                    (. slx.emit(STL); .) // store `val` at `addr`
                     (. printer.endProduction(); .)                          .
 
 Expr                (. printer.startProduction("Expr"); .)
@@ -210,7 +216,8 @@ BaseExpr            (. printer.startProduction("BaseExpr"); .)
     Expr
     ")"
   | 
-    IdAccess
+    IdAccess        // push(addr)
+                    (. slx.emit(LDL); .) // load from `addr`
   | 
     integer         (. slx.emit(ENT, Integer.parseInt(t.val)); .)
   |
@@ -225,7 +232,10 @@ BaseExpr            (. printer.startProduction("BaseExpr"); .)
 
 IdAccess            (. printer.startProduction("IdAccess"); .)
   =
-    identifier
+    identifier      (. // load variable address
+                        int addr = tab.getAddress(t.val);
+                        slx.emit(ENT, addr);
+                    .)
                     (. printer.endProduction(); .)                          .
 
 Type                (. printer.startProduction("Type"); .)
