@@ -25,6 +25,16 @@ public class SymbolTable {
 	}
 	
 	/**
+	 * Check if a symbol exists in the table.
+	 * 
+	 * @param name symbol name
+	 * @return true if the symbol already exists
+	 */
+	public boolean contains(String name) {
+		return symbols.containsKey(name);
+	}
+	
+	/**
 	 * Get address of a symbol.
 	 * 
 	 * @param name symbol name

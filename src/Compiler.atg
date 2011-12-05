@@ -145,8 +145,12 @@ VarDecl             (. printer.startProduction("VarDecl"); .)
   =
     Type
     identifier      (. // add symbol to symbol table
-                        int addr = nextAddr++;
-                        tab.add(t.val, addr);
+                        if (tab.contains(t.val)) {
+                            SemErr("double variable declaration: " + t.val);
+                        } else {
+                            int addr = nextAddr++;
+                            tab.add(t.val, addr);
+                        }
                     .)
     ";"
     [VarDecl]
