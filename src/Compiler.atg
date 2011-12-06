@@ -253,6 +253,7 @@ Assignment          (. printer.startProduction("Assignment"); .)
 Expr <out int type> (. printer.startProduction("Expr"); type = UNDEF; .)
   = (
     BaseExpr <out int type1>
+                    (. type = type1; .) // if this is the only expression
     [               (. char op = ' '; .) // this is for readability
       ( "+"         (. op = '+'; .)
       | "-"         (. op = '-'; .)
