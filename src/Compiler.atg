@@ -249,44 +249,65 @@ Assignment          (. printer.startProduction("Assignment"); .)
 Expr <out int type> (. printer.startProduction("Expr"); type = UNDEF; .)
   = (
     BaseExpr <out int type1>
-                    (. String expr1 = t.val;
-                        int type2 = UNDEF;
-                    .)
-    [( // TODO: rewrite this!
-      "+" BaseExpr <out type2>
-                    (. slx.emit(ADD); type=INT; .)  
-    | "-" BaseExpr <out type2>
-                    (. slx.emit(SUB); type=INT; .)  
-    | "*" BaseExpr <out type2>
-                    (. slx.emit(MUL); type=INT; .)  
-    | "/" BaseExpr <out type2>
-                    (. slx.emit(DIV); type=INT; .)  
-    | "<" BaseExpr <out type2>
-                    (. slx.emit(RLT); type=BOOL; .)  
-    | "&&" BaseExpr <out type2> 
-                    (.  // AND: Pop x. Pop y. Push x && y to stack.
-                        // We need to make sure there's two pops.
-                        int false1 = nextAddr++,
-                            false2 = nextAddr++,
-                            fin = nextAddr++;
-                        slx.emit(JZE, false1);
-                        slx.emit(JZE, false2);
-                        // both TRUE so push(TRUE) and jump to `fin`
-                        slx.emit(ENT, TRUE);
-                        slx.emit(JMP, fin);
-                        slx.emit(LAB, false1);  // first pop() false
-                        // use JZE to pop another time
-                        slx.emit(JZE, false2);
-                        slx.emit(LAB, false2);  // false (two values popped)
-                        slx.emit(ENT, FALSE);   // push(FALSE)
-                        slx.emit(LAB, fin);     // finished!
+    [               (. char op = ' '; .) // this is for readability
+      ( "+"         (. op = '+'; .)
+      | "-"         (. op = '-'; .)
+      | "*"         (. op = '*'; .)
+      | "/"         (. op = '/'; .)           
+      | "<"         (. op = '<'; .)
+      | "&&"        (. op = '&'; .)
+      ) BaseExpr <out int type2>
+                    (. // type checking and operator actions
+                        // check the two types match
+                        if (type1 != type2)
+                            SemErr("type mismatch");
                         
-                        type = BOOL;
-                    .)
-    )
-                    (. // check the types match
-                        if (type1 != type2) {
-                            SemErr("Type mismatch: " + expr1 + ", " + t.val);
+                        // check we get the expected type
+                        if (op == '&' && type1 != BOOL)
+                            SemErr("boolean expected");
+                        if (op != '&' && type1 != INT)
+                            SemErr("integer expected");
+                        
+                        // set output type
+                        if (op == '&' || op == '<')
+                            type = BOOL;
+                        else
+                            type = INT;
+                        
+                        // operation actions (of which five have an opcode)
+                        switch(op) {
+                          case '+':
+                            slx.emit(ADD);
+                            break;
+                          case '-':
+                            slx.emit(SUB);
+                            break;
+                          case '*':
+                            slx.emit(MUL);
+                            break;
+                          case '/':
+                            slx.emit(DIV);
+                            break;
+                          case '<':
+                            slx.emit(RLT);
+                            break;
+                          case '&':
+                            // AND: Pop x. Pop y. Push x && y to stack.
+                            // We need to make sure there's two pops.
+                            int false1 = nextAddr++,
+                                false2 = nextAddr++,
+                                fin = nextAddr++;
+                            slx.emit(JZE, false1);
+                            slx.emit(JZE, false2);
+                            // both TRUE so push(TRUE) and jump to `fin`
+                            slx.emit(ENT, TRUE);
+                            slx.emit(JMP, fin);
+                            slx.emit(LAB, false1);  // first pop() false
+                            // use JZE to pop another time
+                            slx.emit(JZE, false2);
+                            slx.emit(LAB, false2);  // false (two values popped)
+                            slx.emit(ENT, FALSE);   // push(FALSE)
+                            slx.emit(LAB, fin);     // finished!
                         }
                     .)
     ]
@@ -297,6 +318,7 @@ Expr <out int type> (. printer.startProduction("Expr"); type = UNDEF; .)
                         if (type1 != BOOL) {
                             SemErr("boolean expected");
                         }
+                        type = BOOL;
                         slx.emit(NOT);
                     .)
   | 
@@ -306,6 +328,7 @@ Expr <out int type> (. printer.startProduction("Expr"); type = UNDEF; .)
                         if (type1 != INT) {
                             SemErr("integer expected");
                         }
+                        type = INT;
                         slx.emit(UMN);
                     .)
 )                   (. printer.endProduction(); .)                          .
