@@ -180,7 +180,7 @@ Statement           (. printer.startProduction("Statement"); .)
     Expr <out int type>
                     (. // `Expr` value got pushed; if it's false, jump out of if
                         if (type != BOOL) {
-                            SemErr("boolean expected: " + t.val);
+                            SemErr("boolean expected");
                         }
                         int bypass = nextAddr++;
                         slx.emit(JZE, bypass);
@@ -202,7 +202,7 @@ Statement           (. printer.startProduction("Statement"); .)
     Expr <out int type>
                     (. // `Expr` value got pushed
                         if (type != BOOL) {
-                            SemErr("boolean expected: " + t.val);
+                            SemErr("boolean expected");
                         }
                         slx.emit(JZE, end);     // false; jump out of for
                         slx.emit(JMP, loop);    // true; jump to loop body
@@ -252,17 +252,17 @@ Expr <out int type> (. printer.startProduction("Expr"); type = UNDEF; .)
                     (. String expr1 = t.val;
                         int type2 = UNDEF;
                     .)
-    [ // TODO: rewrite this!
+    [( // TODO: rewrite this!
       "+" BaseExpr <out type2>
-                    (. slx.emit(ADD); .)  
+                    (. slx.emit(ADD); type=INT; .)  
     | "-" BaseExpr <out type2>
-                    (. slx.emit(SUB); .)  
+                    (. slx.emit(SUB); type=INT; .)  
     | "*" BaseExpr <out type2>
-                    (. slx.emit(MUL); .)  
+                    (. slx.emit(MUL); type=INT; .)  
     | "/" BaseExpr <out type2>
-                    (. slx.emit(DIV); .)  
+                    (. slx.emit(DIV); type=INT; .)  
     | "<" BaseExpr <out type2>
-                    (. slx.emit(RLT); .)  
+                    (. slx.emit(RLT); type=BOOL; .)  
     | "&&" BaseExpr <out type2> 
                     (.  // AND: Pop x. Pop y. Push x && y to stack.
                         // We need to make sure there's two pops.
@@ -280,19 +280,22 @@ Expr <out int type> (. printer.startProduction("Expr"); type = UNDEF; .)
                         slx.emit(LAB, false2);  // false (two values popped)
                         slx.emit(ENT, FALSE);   // push(FALSE)
                         slx.emit(LAB, fin);     // finished!
+                        
+                        type = BOOL;
                     .)
-    ]
+    )
                     (. // check the types match
                         if (type1 != type2) {
                             SemErr("Type mismatch: " + expr1 + ", " + t.val);
                         }
                     .)
+    ]
   |
     "!"
     BaseExpr <out int type1>
                     (. 
                         if (type1 != BOOL) {
-                            SemErr("boolean expected: " + t.val);
+                            SemErr("boolean expected");
                         }
                         slx.emit(NOT);
                     .)
@@ -301,7 +304,7 @@ Expr <out int type> (. printer.startProduction("Expr"); type = UNDEF; .)
     BaseExpr <out int type1>
                     (.
                         if (type1 != INT) {
-                            SemErr("integer expected: " + t.val);
+                            SemErr("integer expected");
                         }
                         slx.emit(UMN);
                     .)
