@@ -126,12 +126,14 @@ PRODUCTIONS
 
 Grammar	        = MainFuncDecl .
 
+/*------------------------------------------------------------------------*/
 MainFuncDecl        (. printer.startProduction("MainFuncDecl"); .)
   =
     "main"
     FuncBody        (. slx.emit(HLT); .)
                     (. printer.endProduction(); .)                          .
 
+/*------------------------------------------------------------------------*/
 FuncBody            (. printer.startProduction("FuncBody"); .)
   =
     "begin"
@@ -141,6 +143,7 @@ FuncBody            (. printer.startProduction("FuncBody"); .)
     "end"
                     (. printer.endProduction(); .)                          .
 
+/*------------------------------------------------------------------------*/
 VarDecl             (. printer.startProduction("VarDecl"); .)
   =
     Type
@@ -156,6 +159,7 @@ VarDecl             (. printer.startProduction("VarDecl"); .)
     [VarDecl]
                     (. printer.endProduction(); .)                          .
 
+/*------------------------------------------------------------------------*/
 ReturnStatement     (. printer.startProduction("ReturnStatement"); .)
   =
     "return"
@@ -163,6 +167,7 @@ ReturnStatement     (. printer.startProduction("ReturnStatement"); .)
     ";"
                     (. printer.endProduction(); .)                          .
 
+/*------------------------------------------------------------------------*/
 Statement           (. printer.startProduction("Statement"); .)
   = (
     "if"
@@ -217,6 +222,7 @@ Statement           (. printer.startProduction("Statement"); .)
 )                   (. printer.endProduction(); .)                          .
 
 
+/*------------------------------------------------------------------------*/
 // Assignment used to be called ForStatement
 Assignment          (. printer.startProduction("Assignment"); .)
   =
@@ -226,6 +232,7 @@ Assignment          (. printer.startProduction("Assignment"); .)
                     (. slx.emit(STL); .) // store `val` at `addr`
                     (. printer.endProduction(); .)                          .
 
+/*------------------------------------------------------------------------*/
 Expr                (. printer.startProduction("Expr"); .)
   = (
     BaseExpr
@@ -260,6 +267,7 @@ Expr                (. printer.startProduction("Expr"); .)
     BaseExpr        (. slx.emit(UMN); .)
 )                   (. printer.endProduction(); .)                          .
 
+/*------------------------------------------------------------------------*/
 BaseExpr            (. printer.startProduction("BaseExpr"); .)
   = (
     "("
@@ -280,6 +288,7 @@ BaseExpr            (. printer.startProduction("BaseExpr"); .)
     ")"             (. slx.emit(REA); .) // read from stdin
 )                   (. printer.endProduction(); .)                          .
 
+/*------------------------------------------------------------------------*/
 IdAccess            (. printer.startProduction("IdAccess"); .)
   =
     identifier      (. // load variable address
@@ -292,6 +301,7 @@ IdAccess            (. printer.startProduction("IdAccess"); .)
                     .)
                     (. printer.endProduction(); .)                          .
 
+/*------------------------------------------------------------------------*/
 Type                (. printer.startProduction("Type"); .)
   = (
     "int"
