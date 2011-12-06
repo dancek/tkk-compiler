@@ -242,7 +242,11 @@ Assignment          (. printer.startProduction("Assignment"); .)
     IdAccess <out int type1> // push(addr)
     "<="
     Expr <out int type2> // push(val)
-                    (. slx.emit(STL); .) // store `val` at `addr`
+                    (.
+                        if (type1 != type2)
+                            SemErr("type mismatch");
+                        slx.emit(STL);
+                    .) // store `val` at `addr`
                     (. printer.endProduction(); .)                          .
 
 /*------------------------------------------------------------------------*/

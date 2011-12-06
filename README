@@ -28,6 +28,7 @@ as simple and short as possible.
 Type checking and some other error checking was also implemented. The errors
 in the "easy" grammar test set all get caught. The compiler uses SemErr to
 notify about these, so the program is still compiled and may or may not work.
+This is intentional.
 
 
 Caveats
