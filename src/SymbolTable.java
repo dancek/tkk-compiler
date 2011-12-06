@@ -8,10 +8,28 @@ import java.util.HashMap;
  * change implementation if needed.
  */
 public class SymbolTable {
-	private HashMap<String,Integer> symbols;
+	private HashMap<String,Symbol> symbols;
+	
+	/**
+	 * A class that describes a symbol.
+	 * 
+	 * This was made basically because Java doesn't have a Pair<T,S>
+	 * or similar that we could use as HashMap value type.
+	 */
+	private class Symbol {
+		private String name;
+		private int address;
+		private int type;
+		
+		private Symbol(String name, int address, int type) {
+			this.name = name;
+			this.address = address;
+			this.type = type;
+		}
+	}
 	
 	public SymbolTable() {
-		this.symbols = new HashMap<String,Integer>();
+		this.symbols = new HashMap<String,Symbol>();
 	}
 	
 	/**
@@ -19,9 +37,11 @@ public class SymbolTable {
 	 * 
 	 * @param name symbol name
 	 * @param address address
+	 * @param type symbol type
 	 */
-	public void add(String name, int address) {
-		this.symbols.put(name, address);
+	public void add(String name, int address, int type) {
+		Symbol sym = new Symbol(name, address, type);
+		this.symbols.put(name, sym);
 	}
 	
 	/**
@@ -41,7 +61,17 @@ public class SymbolTable {
 	 * @return symbol address
 	 */
 	public int getAddress(String name) {
-		return this.symbols.get(name);
+		return this.symbols.get(name).address;
+	}
+	
+	/**
+	 * Get type of a symbol.
+	 * 
+	 * @param name symbol name
+	 * @return symbol type
+	 */
+	public int getType(String name) {
+		return this.symbols.get(name).type;
 	}
 	
 	/**
