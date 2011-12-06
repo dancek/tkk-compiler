@@ -78,6 +78,12 @@ public class SymbolTable {
 	 * Return a string representation of the symbol table.
 	 */
 	public String toString() {
-		return symbols.toString();
+		String s = "";
+		s += String.format("%20s %7s %7s\n", "name", "address", "type");
+
+		for (Symbol sym : this.symbols.values()) {
+			s += String.format("%20s %7d %7d\n", sym.name, sym.address, sym.type);
+		}
+		return s;
 	}
 }
