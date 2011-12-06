@@ -49,6 +49,11 @@ COMPILER Grammar
 private final int TRUE = 1;
 private final int FALSE = 0;
 
+// type constants
+private final int UNDEF = -1;
+private final int INT = 2;
+private final int BOOL = 3;
+
 private Printer printer;
 private SlxProgram slx;
 private SymbolTable tab;
@@ -146,13 +151,13 @@ FuncBody            (. printer.startProduction("FuncBody"); .)
 /*------------------------------------------------------------------------*/
 VarDecl             (. printer.startProduction("VarDecl"); .)
   =
-    Type
+    Type <out int type>
     identifier      (. // add symbol to symbol table
                         if (tab.contains(t.val)) {
                             SemErr("double variable declaration: " + t.val);
                         } else {
                             int addr = nextAddr++;
-                            tab.add(t.val, addr);
+                            tab.add(t.val, addr, type);
                         }
                     .)
     ";"
@@ -163,7 +168,7 @@ VarDecl             (. printer.startProduction("VarDecl"); .)
 ReturnStatement     (. printer.startProduction("ReturnStatement"); .)
   =
     "return"
-    Expr
+    Expr <out int type>
     ";"
                     (. printer.endProduction(); .)                          .
 
@@ -172,7 +177,11 @@ Statement           (. printer.startProduction("Statement"); .)
   = (
     "if"
     "("
-    Expr            (. // `Expr` value got pushed; if it's false, jump out of if
+    Expr <out int type>
+                    (. // `Expr` value got pushed; if it's false, jump out of if
+                        if (type != BOOL) {
+                            SemErr("boolean expected: " + t.val);
+                        }
                         int bypass = nextAddr++;
                         slx.emit(JZE, bypass);
                     .)
@@ -190,7 +199,11 @@ Statement           (. printer.startProduction("Statement"); .)
                             loop = nextAddr++;
                         slx.emit(LAB, test); // label before loop test
                     .)
-    Expr            (. // `Expr` value got pushed
+    Expr <out int type>
+                    (. // `Expr` value got pushed
+                        if (type != BOOL) {
+                            SemErr("boolean expected: " + t.val);
+                        }
                         slx.emit(JZE, end);     // false; jump out of for
                         slx.emit(JMP, loop);    // true; jump to loop body
                         
@@ -209,7 +222,7 @@ Statement           (. printer.startProduction("Statement"); .)
   | 
     "print"
     "("
-    Expr
+    Expr <out int type>
     ")"
     ";"             (. slx.emit(WRI); .)
   | 
@@ -226,23 +239,33 @@ Statement           (. printer.startProduction("Statement"); .)
 // Assignment used to be called ForStatement
 Assignment          (. printer.startProduction("Assignment"); .)
   =
-    IdAccess        // push(addr)
+    IdAccess <out int type1> // push(addr)
     "<="
-    Expr            // push(val)
+    Expr <out int type2> // push(val)
                     (. slx.emit(STL); .) // store `val` at `addr`
                     (. printer.endProduction(); .)                          .
 
 /*------------------------------------------------------------------------*/
-Expr                (. printer.startProduction("Expr"); .)
+Expr <out int type> (. printer.startProduction("Expr"); type = UNDEF; .)
   = (
-    BaseExpr
-    [
-      "+" BaseExpr  (. slx.emit(ADD); .)  
-    | "-" BaseExpr  (. slx.emit(SUB); .)  
-    | "*" BaseExpr  (. slx.emit(MUL); .)  
-    | "/" BaseExpr  (. slx.emit(DIV); .)  
-    | "<" BaseExpr  (. slx.emit(RLT); .)  
-    | "&&" BaseExpr (. // AND: Pop x. Pop y. Push x && y to stack.
+    BaseExpr <out int type1>
+                    (. String expr1 = t.val;
+                        int type2 = UNDEF;
+                    .)
+    [ // TODO: rewrite this!
+      "+" BaseExpr <out type2>
+                    (. slx.emit(ADD); .)  
+    | "-" BaseExpr <out type2>
+                    (. slx.emit(SUB); .)  
+    | "*" BaseExpr <out type2>
+                    (. slx.emit(MUL); .)  
+    | "/" BaseExpr <out type2>
+                    (. slx.emit(DIV); .)  
+    | "<" BaseExpr <out type2>
+                    (. slx.emit(RLT); .)  
+    | "&&" BaseExpr <out type2> 
+                    (.  // AND: Pop x. Pop y. Push x && y to stack.
+                        // We need to make sure there's two pops.
                         int false1 = nextAddr++,
                             false2 = nextAddr++,
                             fin = nextAddr++;
@@ -259,42 +282,68 @@ Expr                (. printer.startProduction("Expr"); .)
                         slx.emit(LAB, fin);     // finished!
                     .)
     ]
+                    (. // check the types match
+                        if (type1 != type2) {
+                            SemErr("Type mismatch: " + expr1 + ", " + t.val);
+                        }
+                    .)
   |
     "!"
-    BaseExpr        (. slx.emit(NOT); .)
+    BaseExpr <out int type1>
+                    (. 
+                        if (type1 != BOOL) {
+                            SemErr("boolean expected: " + t.val);
+                        }
+                        slx.emit(NOT);
+                    .)
   | 
     "-"
-    BaseExpr        (. slx.emit(UMN); .)
+    BaseExpr <out int type1>
+                    (.
+                        if (type1 != INT) {
+                            SemErr("integer expected: " + t.val);
+                        }
+                        slx.emit(UMN);
+                    .)
 )                   (. printer.endProduction(); .)                          .
 
 /*------------------------------------------------------------------------*/
-BaseExpr            (. printer.startProduction("BaseExpr"); .)
+BaseExpr <out int type>
+                    (. printer.startProduction("BaseExpr"); type = UNDEF; .)
   = (
     "("
-    Expr
+    Expr <out int type1> (. type = type1; .)
     ")"
   | 
-    IdAccess        // push(addr)
-                    (. slx.emit(LDL); .) // load from `addr`
+    IdAccess <out int type1> // push(addr)
+                    (.  slx.emit(LDL); // load from `addr`
+                        type = type1; .)
   | 
-    integer         (. slx.emit(ENT, Integer.parseInt(t.val)); .)
+    integer         (.  slx.emit(ENT, Integer.parseInt(t.val));
+                        type = INT; .)
   |
-    "true"          (. slx.emit(ENT, TRUE); .)
+    "true"          (.  slx.emit(ENT, TRUE);
+                        type = BOOL; .)
   |
-    "false"         (. slx.emit(ENT, FALSE); .)
+    "false"         (.  slx.emit(ENT, FALSE);
+                        type = BOOL; .)
   |
     "read"
     "("
-    ")"             (. slx.emit(REA); .) // read from stdin
+    ")"             (.  slx.emit(REA); // read from stdin
+                        type = INT; // we only read integers, not booleans
+                    .)
 )                   (. printer.endProduction(); .)                          .
 
 /*------------------------------------------------------------------------*/
-IdAccess            (. printer.startProduction("IdAccess"); .)
+IdAccess <out int type>
+                    (. printer.startProduction("IdAccess"); type = UNDEF; .)
   =
     identifier      (. // load variable address
                         if (tab.contains(t.val)) {
                             int addr = tab.getAddress(t.val);
                             slx.emit(ENT, addr);
+                            type = tab.getType(t.val);
                         } else {
                             SemErr("undeclared variable: " + t.val);
                         }
@@ -302,11 +351,11 @@ IdAccess            (. printer.startProduction("IdAccess"); .)
                     (. printer.endProduction(); .)                          .
 
 /*------------------------------------------------------------------------*/
-Type                (. printer.startProduction("Type"); .)
-  = (
-    "int"
+Type <out int type> (. printer.startProduction("Type"); type = UNDEF; .)
+  = (               
+    "int"           (. type = INT; .)
   |
-    "boolean"
+    "boolean"       (. type = BOOL; .)
 )                   (. printer.endProduction(); .)                          .
 
 // End of your compiler specification, make sure the name here matches
