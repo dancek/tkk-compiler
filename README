@@ -33,17 +33,16 @@ This is intentional.
 
 Caveats
 -------
- - `return`
- - type checking
- - &&
+
+The `return` keyword doesn't do anything useful. Its expression is evaluated
+and pushed to stack, but other than that it's a no-op. As per grammar `return`
+can only exist in the end of the main function, and it's also required there.
 
 
 Implementation details
 ----------------------
- - ForStatement was renamed to Assignment for clarity
- - The `op` token was replaced with the terminals it represents. This way the
-   ATG file is easier to read; for each operator, the related code is shown on
-   the same line.
+
+ForStatement was renamed to Assignment for clarity.
 
 ### The for loop
 
