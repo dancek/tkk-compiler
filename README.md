@@ -1,10 +1,3 @@
-T-106.4200 Introduction to Compiling (5 cr)
-Hannu Hartikainen
-
-
-Compiler Assignment
-===================
-
 This is README for a compiler made using Coco/R that compiles a custom language
 (generated for the assignment) to SLX assembly.
 
